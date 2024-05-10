@@ -1,0 +1,66 @@
+{
+	"nhd": {
+		"title": {
+			"0": "",
+			"1": "",
+			"2": "Portrait",
+			"3": "Background",
+			"4": "Ornament"
+		},
+		"button": {
+			"manager": "Open Legend Heroes Manager",
+			"help": "Read the Manual",
+			"ok": "Accept the changes!",
+			"cancel": "Cancel and close!",
+			"switch": "Change portrait type"
+		},
+		"help": {
+			"br": "\n",
+			"brbr": "\n\n",
+			"head": "{~>nhd_mgr.def:0  mirror} Welcome to mod {~gold}Legend Heroes}! {~>nhd_mgr.def:1}",
+			"main": "This wonderful mod adds new elements to the dialogues with the hero doll, allows you to set any portrait for any hero and the corresponding appearance (silhouette), background image and ornament for artifact slots.",
+			"credits": "{~grey ~text align=left}Idea, graphics & design: Sandris}\n{~grey ~text align=left}Plugin, dialogs & scripts: daemon_n}",
+			"ask": "Do you want to know how easy it is to add your own graphics (in *.png format!) and even change the location of artifact slots on the screen?",
+			"top": "To add or change any resource in the game, go to the game folder, where in the {@gamePath@Mods\\Legend Heroes\\data\\ } folder there is a *.zip file with packed resources in *.png format. In order not to work with archives, I suggest creating a folder \"pcx\" in this directory, and in it any directories, so that it is convenient for you to sort the added pictures.",
+			"portrait": "To add your {silhouettes and portraits} to the game, you need to add {3} {(three)} png files to the folder with pictures:\n\nThe 1st one should have the name \"NHL{%}_{$}.png\", where {%} is the number of the faction you want to display in the manager (42 if you want to classify it as a campaign hero and display it on the last page) , and {$} is the index of the new portrait in the general list. This file is needed to display it in the portrait manager and make it available for selection, as well as to set a large portrait for the hero. The mod uses different numbers for different factions, so choose the number carefully (default size is {58}*{64}).\nThe 2nd one should have the name \"NHS{%}_{$}.png\", where {%} and {$} have the same numbers as in the 1st file. This file is needed to replace the small portrait directly in the game itself (default size {48}*{32}).\nThe 3rd one should have the name \"nhv{%}_{&}.png\", where {%} has the same number as the 1st file, but {&} depends on {%}. If {%} = {42}, then {&} = {$} + {12}, otherwise {&} = {$} + {16}. This file is needed to display new silhouettes directly in the game itself (default size {287}*{407}).",
+			"bg": "To add your {background} to the game, you need to add {2} {(two)} png files to the folder with pictures:\n\nThe 1st one should have the name \"nhdTB_{$}.png\", where {$} is the number of your background. This file is needed to display it in the portrait manager. The mod used numbers 0-8, so the next one should be number 9 (default size {58}*{64}).\nThe 2nd one should have the name \"nhBG_{$}.png\", where {$} has the same number as in the 1st file. This file is needed to display it directly in the game (default size {287}*{407}).",
+			"bp": "To add your own {ornament} for artifact slots to the game, you need to add {3} {(three)} png files to the folder with pictures:\n\nThe 1st one should have the name \"nhdTB_{$}.png\", where {$} is the number of your ornament. This file is needed to display it in the portrait manager and make it available for selection. The mod used numbers 0-11, so the next number should be {12} (default size {58}*{64}).\nThe 2nd one should have the name \"nhArt_{$}.png\", where {$} has the same number as in the 1st file. This file is needed to display ONLY HERO DOLL SLOTS directly in the game itself (default size {287}*{350})\nThe 3rd one should have the name \"nhBP_{$}.png\", where {$} has the same number as in the 1st file. This file is needed to display ONLY THE HERO\"S BACKPACK SLOTs directly in the game itself (default size {287}*{56}).",
+			"move": "To change the position of elements in the hero window and each similar dialogue, open the \"Lang\" folder in the mod folder, and in it the \"{NewHeroDlg.json}\" file. In individual categories, the positions of pictures and buttons are configured. The category of artifact slots immediately affects all dialogues where the hero’s artifacts are used along with his doll.",
+			"dlg": {
+				"head": "Manual {~>nhd_info.def:0:0} YES!",
+				"portrait": "I want to add or change Portraits and Silhouettes",
+				"bg": "I want to add or change Background Images",
+				"bp": "I want to add or change Ornaments",
+				"move": "I want to know how to change the location of pictures and artifact slots"
+			}
+		},
+		"missed": {
+			"head": "{Attention!}\n\n",
+			"main": "File {@resource@} is missing.",
+			"look": "This is a picture of the Hero\"s silhouette.\n",
+			"small": "This is a picture of a small portrait.\n",
+			"large": "This is a picture of a large portrait.\n",
+			"bg": "This is a picture of the Faction background.\n",
+			"slots": "This is a picture of the equipped artifact slots.\n",
+			"bp": "This is a picture of the backpack artifact slots.\n",
+			"do_this": "\n\nPlease go to {@gamePath@Mods\\Legend Heroes\\data\\pcx\\} and place the missing files there.",
+			"fail": " {~r}INTERRUPTION!}\n\nEither the plugin or the dialog file is not loaded or is corrupt."
+		},
+		"faction": {
+			"0": "Castle",
+			"1": "Stronghold",
+			"2": "Tower",
+			"3": "Infernal",
+			"4": "Necropolis",
+			"5": "Dungeon",
+			"6": "Stronghold",
+			"7": "Fortress",
+			"8": "Conflux",
+			"9": "Future faction",
+			"10": "Future faction",
+			"11": "Future faction",
+			"12": "Future faction",
+			"99": "Campaign and Custom"
+		}
+	}
+}

@@ -1,0 +1,35 @@
+{
+	"caption": {
+		"en_US": "",
+		"ru_RU": "",
+		"ua_UA": ""
+	},
+	"description": {
+		"full": {
+			"en_US": "readme.txt",
+			"ru_RU": "readme_ru.txt",
+			"ua_UA": ""
+		},
+		"short": {
+			"en_US": "",
+			"ru_RU": "",
+			"ua_UA": ""
+		}
+	},
+	"author": "Sandris, daemon_n",
+	"homepage": "",
+	"icon": {
+		"file": "LegendHeroes.ico",
+		"index": 0
+	},
+	"mod_version": "1.01",
+	"priority": 0,
+	"compatibility": {
+		"class": "default",
+		"entries": {}
+	},
+	"platform": "era",
+	"info_version": "1.0",
+	"plugins": {},
+	"category": "graphics"
+}
