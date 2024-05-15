@@ -1,0 +1,804 @@
+ZVSE2
+ERMS_ScriptName = Legend Hero View Dialog Manager
+ERMS_ScriptAuthor= daemon_n [dimonglazkov@gmail.com], Graphics and idea by Sandris
+ERMS_ScriptVersion= 2
+ERMS_ScriptERMVersion = ERA 3.91
+
+MACRO NAMES:
+#DLG_CALL
+#DLG_SET_VIEW
+#PAGES_SWITCH_PART
+#DLG_PROCEDURE
+#PAGES_SWITCH_PART
+#EXIT_DLG
+
+!#DC(NHD_MANAGER_DIALOG) =909;
+!#DC(NHD_MANAGER_BACKGROUND_ID) =555;
+!#DC(NHD_MANAGER_HERO_LOOK_ID) =556;
+!#DC(NHD_MANAGER_ARTS_LOOK_ID) =557;
+!#DC(NHD_MANAGER_BACKPACK_LOOK_ID) =558;
+
+!#DC(NHD_BACKPACK_FRAME_ID) = 19;
+!#DC(NHD_BACKGROUND_FRAME_ID) = 49;
+!#DC(NHD_FACTION_FRAME_ID) = 69;
+!#DC(NHD_PORTRAIT_FRAME_ID) = 129;
+
+!#DC(NHD_SMALL_PORTRAIT_ID) = 125;
+
+!#DC(NHD_CAMPAIGN_INDEX) = 99;
+
+
+z Vars for hints:
+1-12 - for factions
+13-15 - for button hints
+21-44 - for heroes
+
+
+
+
+
+!?FU(OnKeyPressed_AdvMap)&x1=(KEY_Q);
+
+
+
+
+!?FU(OnAfterLoadGame);
+!!OW:Cd/?(currPlayer:y);
+!!FU(nhd_ReportAboutNimToPlugin):P(currPlayer);
+
+
+!?FU(OnAfterErmInstructions);
+!!re i/0/(PLAYER_LAST);
+  !!OW:Ii/?(isDead:y)/?(isAi:y) C?(currPlayer:y);
+
+  !!if&(isAi)=(FALSE)/(isDead)=(FALSE);
+    !!if&(currPlayer)=i;
+      !!FU(nhd_ReportAboutNimToPlugin):Pi/(TRUE);
+    !!el;
+      !!IP:Di;
+      !!FU(nhd_ReportAboutNimToPlugin):Di/(TRUE);
+    !!en;
+  !!en;
+!!en;
+
+
+!?FU(nhd_ReportAboutNimToPlugin);
+!#VA(player:x) (firstLaunch:x);
+  !!VR(nim:y):S(FALSE);
+  !!UN:J8/1/^Xyst main.pac^;
+  !!VR(nim)&1:+1;
+  !!UN:J8/1/^pum_interface.pac^;
+  !!VR(nim)&1:+1;
+  !!if&(nim);
+    !!VRi^nhd_new_interface_mod^:S(TRUE);
+  !!el;
+    !!VRi^nhd_new_interface_mod^:S(FALSE);
+  !!en;
+  !!SN:L^Legend_Heroes.era^/?(plugin:y);A(plugin)/^SetNymDependecies^/?(func:y);
+  !!if&(plugin);
+    !!SN:A(plugin)/^SetNymDependecies^/?(func:y) E(func)/(CALLCONV_CDECL)/(player)/(nim);/(firstLaunch);
+  !!en;
+
+  !?FU(OnGameEnter);
+  !!OW:Cd/?(currPlayer:y);
+  !!FU(nhd_ReportAboutNimToPlugin):P(currPlayer);
+  !!FU(NewStrArray):P8/?(buttonNames:y);
+  !!SN:V(buttonNames:y)/0/^assasins.def^/^bckpck.def^/^hsbtns2.def^/^hsbtns4.def^/^nhd_info.def^/^nhd_mgr.def^/^nhd_NPC.def^/^stars.def^;
+  !!if&i^nhd_new_interface_mod^;
+    !!re i/0/7;
+      !!SN:V(buttonNames:y)/i/?(buttonName:z);
+      !!re f/0/2;
+        !!SN:R^%(buttonName):0_%f.png^/^Data\defs\NewInterfaceMod\%(buttonName)\0_%f.png^; // changing frames
+      !!en;
+    !!en;
+  !!en;
+
+************************************ DLG_CALL ************************************
+
+  !?FU(OnHeroScreenMouseClick)&i^mouse_flags^=(NO_MOUSE_FLAGS)/i^mouse_item^>100/i^mouse_action^=(MOUSE_LMB_RELEASED)/999;
+
+    !!FU(LoadIntGlobalsFromJson):P^nhd.hero_screen.manager.^/^nhd_^/^id^;
+    *!IF:M^%s^;
+    !!if&i^mouse_item^=i^nhd_id^;
+      !!VRi^nhd_id^:S(NULL);
+
+      !!SN:L^Legend_Heroes.era^/?(plugin:y);
+
+      !!if&(plugin);
+
+
+        !!UN:C7505216/1/2;                                       [remove shadow]
+        !!FU(gem_DlgReload):P^NHD_MAN.txt^;
+
+
+        *!FU:E;
+        !!SN:M(M_AUTO_ID)/156/(M_INT)/(M_TRIGGER_LOCAL)/?i^nhd_originalHeroArray^;
+        !!SN:Mi^nhd_originalHeroArray^/?(arrayAddr:y)/0; check hero portrait is overwritten
+        !!SN:A(plugin)/^GetPortaitStatus^/?(getOriginalStatusFoo:y) E(getOriginalStatusFoo:y)/(CALLCONV_CDECL)/(arrayAddr:y);
+
+        !!FU(nhd_ManageDlg_Prepare):Pi^mouse_hero_0^/(plugin)/?(result:y);
+
+        !!if&(result);
+          !!DL(NHD_MANAGER_DIALOG):S;
+          !!FU(nhd_Dlg_Dtor):P;
+
+          !!UN:R3/-1;
+        !!el;
+          !!IF:Q1/(PIC_TYPE_LUCK_NEUTRAL)/0/1/^%T(nhd.missed.fail)^;
+        !!en;
+        !!UN:C7505216/1/18;                                    [show shadow]
+        !!VRi^nhd_originalHeroArray^:S(NULL);
+      !!en;
+
+    !!en;
+
+!?FU(nhd_ManageDlg_Prepare);
+!#VA(heroId:x) (plugin:x) (result:x);
+
+  !!DL(NHD_MANAGER_DIALOG):N^NHD_MAN.txt^;
+  !!FU(DL_FindById):P(NHD_MANAGER_DIALOG)/?(dlgPtr:y);
+  !!UN:C(dlgPtr)/4/?i^lh_dlg^;
+
+  !!UN:J8/1/^Legend_Heroes.pac^;
+  !!VR(result):S(FALSE);
+  !!if&1;
+  // import plugin functions
+    !!SN:A(plugin)/^GetCurrentPortraitName^/?i^lh_getCurrentPortraitNameFoo^;
+    !!SN:A(plugin)/^GetNativePortraitName^/?i^lh_getNativePortraitNameFoo^;
+    !!SN:A(plugin)/^GetModPortraitName^/?i^lh_getModPortraitNameFoo^;
+
+    !!SN:A(plugin)/^GetHeroLook^/?i^lh_GetHeroLookFoo^;
+    !!SN:A(plugin)/^SetHeroLook^/?i^lh_SetHeroLookFoo^;
+
+    !!SN:A(plugin)/^RedrawHeroScreen^/?i^lh_RedrawHeroLookFoo^;
+
+
+
+    !!VR(result):S(TRUE);
+
+    !!re i/1/100;                                                                                  [store z-global vars]
+      !!VRs^nhd_global_z%i^:Szi;
+    !!en;
+
+    !!FU(nhd_HeroLook_Get):P(heroId)/?(faction:y)/?(portraitIndex:y)/?(backGround:y)/?(ornament:y)/?(override:y);
+    !!FU(nhd_SetDlgView):P(NHD_MANAGER_DIALOG)/(heroId)/(faction)/(portraitIndex)/(backGround)/(ornament)/(override:y);
+  !!en;
+
+!?FU(nhd_OverrideButton_SetState);
+!#VA(override:x);
+!!VR(currentFrame:y):S(override) *3;
+!!FU(LH_SetButtonFrames):P26/(currentFrame)/d/d/i^lh_dlg^;
+
+************************************ DLG_SET_VIEW ********************************
+  !?FU(nhd_SetDlgView);
+  !#VA(dlg:x) (heroId:x) (faction:x) (portraitIndex:x) (backGround:x) (slots:x) (override:x);
+    *!IF:M^%(faction)^;
+
+    !!FU(nhd_SetDlgText):P(dlg);
+    !!DL(dlg):E30722/0;                 [disable OK button]
+
+
+    !!VRi^nhd_chosen_faction_id^:S(faction);
+    !!FU(nhd_FactionPanel_Init):P(dlg)/(faction); [then here it is being set to latest faction id]
+
+
+
+    !!VRi^nhd_chosen_BackGround_id^:S(backGround);
+    !!FU(nhd_Panel_GetMaxPageId):P9/^nhdTB^/?i^nhd_max_page_BackGround^/1;
+    !!FU(nhd_BackgroundPanel_SetActive):P(dlg)/0/(backGround)/(TRUE);
+
+    !!VRi^nhd_chosen_BackPack_id^:S(slots);
+    !!FU(nhd_Panel_GetMaxPageId):P9/^nhdMS^/?i^nhd_max_page_BackPack^/2;
+    *!IF:M^%i(nhd_max_page_BackPack)^;
+    !!FU(nhd_SetBackPackDlg):P(dlg)/0/(slots)/(TRUE);
+
+    !!VRi^nhd_chosen_heroIndex_id^:S(portraitIndex);
+    !!FU(nhd_Hero_GetCurrentPortrait_Names):P(heroId)/?s^nhd_current_hero_small_portrait_name^/?s^nhd_current_hero_BIG_portrait_name^;    [GetCurrent Portraits]
+    
+    !!VRi^nhd_chosen_override^:S(override);
+    !!FU(nhd_OverrideButton_SetState):P(override);
+
+    !!VRi^nhd_current_HeroPortraits_page_%(faction)^:S0;
+    !!FU(nhd_SetHeroesPortraitsInDlg):Pi^nhd_current_faction^/0/(portraitIndex)/0;(TRUE);
+
+    //Prepare Preview Pictures
+    !!VR(bgName:z):S^nhBG_%(backGround).pcx^;
+    !!DL(dlg):A(NHD_MANAGER_BACKGROUND_ID)/(DLG_CMD_SET_PCX)/(bgName)/0;
+
+    !!VR(lookName:z):S^nhv%(faction)_%(portraitIndex).pcx^;
+    !!DL(dlg):A(NHD_MANAGER_HERO_LOOK_ID)/(DLG_CMD_SET_PCX)/(lookName)/0;
+
+    !!VR(slotsName:z):S^nhArt_%(slots).pcx^;
+    !!DL(dlg):A(NHD_MANAGER_ARTS_LOOK_ID)/(DLG_CMD_SET_PCX)/(slotsName)/0;
+
+    !!VR(backPackName:z):S^nhBP_%(slots).pcx^;
+    !!DL(dlg):A(NHD_MANAGER_BACKPACK_LOOK_ID)/(DLG_CMD_SET_PCX)/(backPackName)/0;
+
+
+    !!DL(dlg):A(NHD_SMALL_PORTRAIT_ID)/(DLG_CMD_SET_PCX)/s^nhd_current_hero_small_portrait_name^/0;
+
+  !?FU(nhd_SetDlgText);
+  !#VA(dlg:x) (faction:x) (currChoice:x) (firstLaunch:x);
+    !!re i/0/4;
+      !!SN:T^nhd.title.%i^/?(head:z);
+      !!VR(head):S^{~gold}%(head)}^;
+      !!DL(dlg):Ai/(DLG_CMD_SET_TEXT)/(head)/1;
+    !!en;
+
+    !!VRz13:S^%T(nhd.button.ok)^;
+    !!VRz14:S^%T(nhd.button.cancel)^;
+    !!VRz15:S^%T(nhd.button.help)^;
+    !!VRz16:S^%T(nhd.button.switch)^;
+    !!DL(dlg):H30722/z13 H30721/z14 H6/z15 H26/z16;
+
+
+!?FU(nhd_FactionPanel_Init);
+  !#VA(dlg:x) (chosenFaction:x);
+  !!re i/0/11;
+    !!VR(item:y):Si +50;
+    !!VR(factionPictureName:z):S^nhdTs_%i.pcx^;
+    !!VR(zVar:y):Si+1; 1-12 set factions text
+
+    !!SN:T^nhd.faction.%i^/?z(zVar) F^PcxPngExists^/(factionPictureName); [get hint and check if png exists]
+
+    !!if&v1=0; if not exists
+      !!VR(factionPictureName):S^nhdTs_%(NHD_CAMPAIGN_INDEX).pcx^;               [set new name for picture]
+      !!VRz(zVar):S^%T(nhd.faction.99)^;                                   [assign new hint as camppaign]
+      !!FU(nhd_Panel_GetMaxPageId):P24/^nhl%(NHD_CAMPAIGN_INDEX)^/?i^nhd_max_page_Portraits_%(NHD_CAMPAIGN_INDEX)^;
+
+      !!VRi^nhd_campaign_page^:Si;      [assign campaign page]
+      !!VRi:S12;                        [exit after this iteration]
+    !!el;
+      !!FU(nhd_Panel_GetMaxPageId):P24/^nhl%i^/?i^nhd_max_page_Portraits_%i^;
+    !!en;
+    !!DL(dlg):A(item)/(DLG_CMD_SET_PCX)/(factionPictureName)/0 H(item)/z(zVar);
+  !!en;
+
+  !!FU(nhd_FactionPanel_SetActive):P(dlg)/(chosenFaction);
+
+!?FU(nhd_FactionPanel_SetActive);
+!#VA(dlg:x) (faction:x);
+  !!if&(faction)=(NHD_CAMPAIGN_INDEX);
+    !!VR(itemId:y):Si^nhd_campaign_page^ +50;
+    *!VRi^nhd_chosen_faction_id^:Si^nhd_campaign_page^;
+  !!el;
+    !!VR(itemId:y):S(faction:x) +50;
+  !!en;
+  !!FU(LH_DlgFrame_SetAtItem):P(NHD_FACTION_FRAME_ID)/(itemId)/2;
+  *!VRi^nhd_chosen_faction_id^:S(faction);
+
+  !!VRi^nhd_current_faction^:S(faction);
+  !!VRi^nhd_current_HeroPortraits_page_%(faction)^:S0;
+
+  !?FU(nhd_BackgroundPanel_SetActive);
+  !#VA(dlg:x) (page:x) (currChoice:x) (firstLaunch:x);
+  !!FU(LH_DlgItem_Show):P(NHD_BACKGROUND_FRAME_ID)/(FALSE)/(FALSE)/(FALSE)/i^lh_dlg^; hide frame
+
+    !!re i/0/8;
+      !!VR(pic:y):S(page) *9 +i;
+      !!VR(itemId:y):Si +40;
+
+      !!if|(firstLaunch)/i^nhd_current_BackGround_page^<>(page);
+
+        !!VR(newSlotsName:z):S^nhdTB_%(pic).pcx^;
+        !!SN:F^PcxPngExists^/(newSlotsName);
+        !!if&v1=0;
+          !!VR(newSlotsName):S^nhd_empt.pcx^;
+        !!en;
+
+        !!VRi^nhd_item_%(itemId)_is_available^:Sv1;
+
+        !!DL(dlg):A(itemId)/(DLG_CMD_SET_PCX)/(newSlotsName)/0;
+      !!en;
+
+      !!if&(pic)=(currChoice);
+        !!FU(LH_DlgFrame_SetAtItem):P(NHD_BACKGROUND_FRAME_ID)/(itemId)/7;
+      !!en;
+    !!en;
+
+    !!VRi^nhd_current_BackGround_page^:S(page);
+
+
+!?FU(LH_DlgFrame_SetAtItem);
+!#VA(frameId:x) (itemId:x) (offset:x);
+!!FU(LH_DlgItem_Show):P(frameId)/(TRUE)/(TRUE)/(FALSE)/i^lh_dlg^;
+!!FU(LH_DlgItem_Position):P(itemId)/?(x:y)/?(y:y)/(FALSE)/i^lh_dlg^;
+!!VR(x):-(offset:x);
+!!VR(y):-(offset:x);
+!!FU(LH_DlgItem_Position):P(frameId)/(x:y)/(y:y)/(FALSE)/i^lh_dlg^;
+
+  !?FU(nhd_SetBackPackDlg);
+  !#VA(dlg:x) (page:x) (currChoice:x) (firstLaunch:x);
+
+    *!DL(dlg):A19/52/350/0 A19/53/240/0;
+    !!FU(LH_DlgItem_Show):P(NHD_BACKPACK_FRAME_ID)/(FALSE)/(FALSE)/(FALSE)/i^lh_dlg^;
+
+    !!re i/0/8;
+      !!VR(pic:y):S(page) *9 +i;
+      !!VR(itemId:y):Si +10;
+
+      !!if|(firstLaunch)/i^nhd_current_BackPack_page^<>(page);
+        !!VR(newSlotsName:z):S^nhdMS_%(pic).pcx^;
+        !!SN:F^PcxPngExists^/(newSlotsName);
+
+        !!if&v1;
+          !!VRi^nhd_item_%(itemId)_is_available^:S(TRUE);
+        !!el;
+          !!VR(newSlotsName):S^nhd_empt.pcx^;
+          !!VRi^nhd_item_%(itemId)_is_available^:S(FALSE);
+        !!en;
+
+        !!DL(dlg):A(itemId)/(DLG_CMD_SET_PCX)/(newSlotsName)/0;
+        
+      !!en;
+
+      !!if&(pic)=(currChoice);
+        !!FU(LH_DlgFrame_SetAtItem):P(NHD_BACKPACK_FRAME_ID)/(itemId)/7;
+      !!en;
+
+    !!en;
+
+    !!VRi^nhd_current_BackPack_page^:S(page);
+
+  !?FU(lh_getHeroPortraitNameForDlg);
+  !#VA(faction:x) (slot:x) (heroId:x) (pictureHint:x) (largePortrait:x) (result:x);
+
+  !!VR(result):S(TRUE);
+  !!VR(override:y):S(FALSE);
+  !!VR(hint:z):S^^;
+
+  !!if&(heroId)<>(NO_HERO);
+    !!HE(heroId):B0/?(hint:z);
+    !!VR(override):Si^nhd_chosen_override^;
+  !!en;
+  !!VR(pictureHint):Z(hint:z);
+
+  !!if&(override);
+    !!FU(nhd_Hero_GetNativePortrait_Names):P(heroId)/?(smallPortrait:z)/?(bigPortait:z);
+  !!el;
+    !!VR(bigPortait:z):S^nhl%(faction)_%(slot).pcx^;
+    !!SN:F^PcxPngExists^/(bigPortait:z);
+    !!if&v1=0;
+      !!VR(bigPortait:z):S^nhd_empt.pcx^;
+      !!VR(result):S(FALSE);
+    !!en;
+  !!en;
+  !!VR(largePortrait):Z(bigPortait:z);
+
+  !?FU(nhd_SetHeroesPortraitsInDlg);
+  !#VA(faction:x) (page:x) (currentPortraitIndex:x);
+
+    !!FU(LH_DlgItem_Show):P(NHD_PORTRAIT_FRAME_ID)/(FALSE)/(FALSE)/(FALSE)/i^lh_dlg^;                   [hide frame]
+    !!FU(nhd_GetFactionHeroes):P(faction)/?(factionFirstHero:y)/?(factionLastHero:y)/?(heroesNumber:y); [works only for page one]
+    !!re (slot:y)/0/23;
+      !!VR(itemId:y):S100 +(slot);
+
+      !!VR(zVar:y):S(slot) +21;
+      !!VRz(zVar):S^^;
+      !!VR(portraitIndex:y):S(page) *24 +(slot);
+
+      !!VR(heroId:y):S(factionFirstHero) +(portraitIndex);
+      !!if&(heroId)>(factionLastHero);
+        !!VR(heroId):S(NO_HERO);
+      !!en;
+
+      !!FU(lh_getHeroPortraitNameForDlg):P(faction)/(portraitIndex)/(heroId)/?z(zVar)/?(newSlotsName:z)/?i^nhd_item_%(itemId)_is_available^;
+
+      !!SN:E6288816/2/i^lh_dlg^/(itemId);                              [get item struct]
+      !!VR(item:y):Sv1;
+
+      !!if&(item)>0;                                                   [if exists]
+        !!UN:C(item)/48/4/?(pcx16:y);                                  [take dlgPcx's _Pcx16_*]
+        !!if&(pcx16);                                                  [if exists]
+          !!UN:C(pcx16)/24/4/?(refNumber:y);                           [take ref number]
+          !!SN&(refNumber:y)>0:E4513008/(CALLCONV_THISCALL)/(pcx16)/0; [delete pcx from memory to alow to set new;]
+        !!en;
+      !!en;
+
+
+      !!DL(NHD_MANAGER_DIALOG):A(itemId)/(DLG_CMD_SET_PCX)/(newSlotsName)/1;
+      !!DL(NHD_MANAGER_DIALOG):H(itemId)/z(zVar);
+      !!if&(portraitIndex)=(currentPortraitIndex)/(faction)=i^nhd_chosen_faction_id^;
+        !!FU(LH_DlgFrame_SetAtItem):P(NHD_PORTRAIT_FRAME_ID)/(itemId)/7;
+      !!en;
+    !!en;
+
+    !!VRi^nhd_current_HeroPortraits_page_%(faction)^:S(page);
+    
+
+************************************ DLG_PROCEDURE *******************************
+  !?FU(nhd_PcxToPngExt);
+  !#VA(pcx:x) (png:x);
+    !!VR(name:z):Sz(pcx);
+    !!VR(name):M4/?(length:y);
+    !!if&(length)>3;
+      !!VR(length):-3;
+      !!VR(name):M1/(name)/0/(length) +^png^;
+      !!VR(png):Z(name);
+    !!en;
+
+  //СALL HELP DLG
+  !?FU(OnCustomDialogEvent)&i^dlg_id^=(NHD_MANAGER_DIALOG)/i^mouse_item^=6/i^mouse_action^=(MOUSE_LMB_RELEASED);
+
+    !!VR(brbr:z):S^%T(nhd.help.brbr)^;
+
+    !!IF:Q1/^%T(nhd.help.head)%(brbr)%T(nhd.help.main)%(brbr)%T(nhd.help.credits)%(brbr)%T(nhd.help.ask)^;
+    !!if&1;
+      !!FU(nhs_HelpRadioDlg):P;
+    !!en;
+
+  !?FU(nhs_HelpRadioDlg);
+    !!FU(RadioDlg_Reset):P;
+    !!FU(RadioDlg_SetTitle):P^%T(nhd.help.dlg.head)^;
+    !!FU(RadioDlg_AddItem):P^%T(nhd.help.dlg.portrait)^/d/^portrait^;
+    !!FU(RadioDlg_AddItem):P^%T(nhd.help.dlg.bg)^/d/^bg^;
+    !!FU(RadioDlg_AddItem):P^%T(nhd.help.dlg.bp)^/d/^bp^;
+    !!FU(RadioDlg_AddItem):P^%T(nhd.help.dlg.move)^/d/^move^;
+    !!FU(RadioDlg_AddCancelButton):P;
+    !!FU(RadioDlg_Show):Pd/?(value:y)/?(tag:z);
+
+    !!if&(value)<>(DLG_RESULT_CANCEL);
+      !!SN:T^nhd.help.%(tag)^/?s^jsonString^;
+      !!UN:J9/0/1;
+      !!SN:T^nhd.help.top^/?(top:z)/^gamePath^/z1;(gamePath:z);
+      !!IF:M^{~text align=left}%(top)%T(nhd.help.brbr)%s(jsonString)}^;
+      !!VRs^jsonString^:S^^;
+      !!FU(nhs_HelpRadioDlg):P;
+    !!en;
+
+
+  !?FU(OnCustomDialogEvent)&i^dlg_id^=(NHD_MANAGER_DIALOG)/i^mouse_item^>=10/i^mouse_item^<=18/i^nhd_item_%i(mouse_item)_is_available^/i^mouse_action^=(MOUSE_LMB_PRESSED);
+
+    !!VR(slots:y):Si^nhd_current_BackPack_page^ *9 +i^mouse_item^ -10;
+    !!SN:P^BUTTON.wav^;
+
+    !!VR(accept:y):S(TRUE);
+    !!VR(missed:z):S^%T(nhd.missed.head)^;
+
+    !!VR(slotsName:z):S^nhArt_%(slots).pcx^;
+
+    !!SN:F^PcxPngExists^/(slotsName);
+    !!if&v1=(FALSE);
+      !!VR(accept):S(FALSE);
+      !!FU(nhd_PcxToPngExt):P(slotsName)/?(slotsName);
+
+      !!SN:T^nhd.missed.main^/?(slotsMiss:z)/^resource^/(slotsName);
+      !!VR(slotsMiss):+^ %T(nhd.missed.slots)^;
+      !!VR(missed):+^{~text align=left}%(slotsMiss)}^;
+
+      *!VR(slotsName):S^nhd_bkg.pcx^;
+    !!en;
+
+    !!VR(backPackName:z):S^nhBp_%(slots).pcx^;
+    !!SN:F^PcxPngExists^/(backPackName);
+    !!if&v1=(FALSE);
+      !!VR(accept):S(FALSE);
+      !!FU(nhd_PcxToPngExt):P(backPackName)/?(backPackName);
+      !!SN:T^nhd.missed.main^/?(bpMiss:z)/^resource^/(backPackName);
+      !!VR(bpMiss):+^ %T(nhd.missed.bp)^;
+      !!VR(missed):+^{~text align=left}%(bpMiss)}^;
+    !!en;
+
+    !!if&(accept);
+      !!DLi^dlg_id^:A(NHD_MANAGER_BACKPACK_LOOK_ID)/(DLG_CMD_SET_PCX)/(backPackName)/0;
+      !!DLi^dlg_id^:A(NHD_MANAGER_ARTS_LOOK_ID)/(DLG_CMD_SET_PCX)/(slotsName)/0 E30722/1;
+      !!VRi^nhd_chosen_BackPack_id^:S(slots);
+
+      !!FU(nhd_SetBackPackDlg):Pi^dlg_id^/i^nhd_current_BackPack_page^/i^nhd_chosen_BackPack_id^/(FALSE);
+    !!el;
+      !!UN:J9/0/1;
+      !!SN:T^nhd.missed.do_this^/?(doThis:z)/^gamePath^/z1;
+      !!IF:M^%(missed)%(doThis:z)^;
+    !!en;
+
+
+  // BACKGROUND Choosing view
+  !?FU(OnCustomDialogEvent)&i^dlg_id^=(NHD_MANAGER_DIALOG)/i^mouse_item^>=40/i^mouse_item^<=49/i^nhd_item_%i(mouse_item)_is_available^/i^mouse_action^=(MOUSE_LMB_PRESSED);
+    !!SN:P^BUTTON.wav^;
+
+    !!VR(accept:y):S(TRUE);
+    !!VR(missed:z):S^%T(nhd.missed.head)^;
+
+      !!VR(bg:y):Si^nhd_current_BackGround_page^ *9 +i^mouse_item^ -40;
+
+      !!VR(bgName:z):S^nhBG_%(bg).pcx^;
+      !!SN:F^PcxPngExists^/(bgName);
+      !!if&v1=(FALSE);
+        !!VR(accept):S(FALSE);
+        !!FU(nhd_PcxToPngExt):P(bgName)/?(bgName);
+
+        !!SN:T^nhd.missed.main^/?(bgMiss:z)/^resource^/(bgName);
+        !!VR(bgMiss):+^ %T(nhd.missed.bg)^;
+        !!VR(missed):+^{~text align=left}%(bgMiss)}^;
+      !!en;
+
+      !!if&(accept);
+        !!VRi^nhd_chosen_BackGround_id^:S(bg);
+
+        !!DLi^dlg_id^:A(NHD_MANAGER_BACKGROUND_ID)/(DLG_CMD_SET_PCX)/(bgName)/0 E30722/1;
+        !!FU(nhd_BackgroundPanel_SetActive):Pi^dlg_id^/i^nhd_current_BackGround_page^/i^nhd_chosen_BackGround_id^/(FALSE);
+      !!el;
+        !!IF:M^%(missed)%T(nhd.missed.do_this)^;
+      !!en;
+
+    !!FU:E;
+
+  //FACTION Choosing Faction
+  !?FU(OnCustomDialogEvent)&i^dlg_id^=(NHD_MANAGER_DIALOG)/i^mouse_item^>=50/i^mouse_item^<=61/i^mouse_action^=(MOUSE_LMB_PRESSED);
+    !!VR(faction:y):Si^mouse_item^ -50;
+
+    !!if|(faction)>i^nhd_campaign_page^/(faction)=i^nhd_current_faction^; [if clicked more than latest page]
+      !!FU:E;
+    !!en;
+    !!if&(faction)=i^nhd_campaign_page^;
+      !!VR(faction):S(NHD_CAMPAIGN_INDEX);
+    !!en;
+
+    !!FU(nhd_FactionPanel_SetActive):Pi^dlg_id^/(faction)/(FALSE);
+    !!FU(nhd_SetHeroesPortraitsInDlg):P(faction)/0/i^nhd_chosen_heroIndex_id^/(TRUE);
+    !!SN:P^BUTTON.wav^;
+
+
+  //HEROES Portraits Choosing view
+  !?FU(OnCustomDialogEvent)&i^dlg_id^=(NHD_MANAGER_DIALOG)/i^mouse_item^>=100/i^mouse_item^<=123/
+  i^nhd_item_%i(mouse_item)_is_available^/i^mouse_action^<>(MOUSE_LMB_RELEASED);
+    !!VR(portraitIndex:y):Si^mouse_item^ -100;
+
+    !!if&i^mouse_action^=(MOUSE_LMB_PRESSED);
+      !!FU(nhd_ChooseHeroPortrait):P(portraitIndex:y)/i^mouse_item^/(FALSE);
+      !!SN:P^BUTTON.wav^;
+    !!el;
+      !!FU(nhd_PreviewHeroPortrait):P(portraitIndex:y);
+    !!en;
+
+
+!?FU(nhd_GetFactionHeroes); 
+!#VA(faction:x) (factionFirstHero:x) (factionLastHero:x) (heroesNumber:x);
+
+!!if&(faction)=(NHD_CAMPAIGN_INDEX);
+  !!VR(factionFirstHero):S(HERO_SIR_MULLICH);
+  !!VR(factionLastHero):S(HERO_LAST_WOG);
+!!el;
+  !!VR(factionFirstHero):S(faction) *16;
+  !!VR(factionLastHero):S(factionFirstHero) +15;
+!!en;
+!!VR(heroesNumber):S(factionLastHero) -(factionFirstHero) +1;
+
+!?FU(nhd_ChooseHeroPortrait);
+
+    !#VA(portraitIndex:x) (itemId:x) (switchPortraits:x);
+    !!if&(switchPortraits:x);
+      !!VR(currentFaction:y):Si^nhd_chosen_faction_id^;
+
+    !!el;
+      !!VR(currentFaction:y):Si^nhd_current_faction^;
+
+    !!en;
+    *!IF&x3:M^%i(nhd_chosen_faction_id)^;
+    !!VR(look:y):Si^nhd_current_HeroPortraits_page_%(currentFaction)^ *24 +(portraitIndex:x);i^mouse_item^ -100;
+
+    !!VR(acceptLookChange:y):S(TRUE);
+    !!VR(missed:z):S^%T(nhd.missed.head)^;
+    !!VR(smallPortrait:z):S^^;
+
+
+    !!FU(nhd_GetFactionHeroes):P(currentFaction:y)/?(factionFirstHero:y)/?(factionLastHero:y)/?(heroesNumber:y); [works only for page one]
+    *!IF:M^%(look)^;
+    !!VR(override:y):S(FALSE);
+    !!if&i^nhd_current_HeroPortraits_page_%(currentFaction)^=0/(portraitIndex)<(heroesNumber:y);(maxOriginalHero);
+      !!VR(heroId:y):S(factionFirstHero:y) +(portraitIndex);
+      !!VR(override):Si^nhd_chosen_override^;
+    !!en;
+    !!if&(override);
+      !!FU(nhd_Hero_GetNativePortrait_Names):P(heroId)/?(smallPortrait:z)/?(bigPortait:z);
+    !!el;
+      !!VR(bigPortait):S^nhL%(currentFaction)_%(look).pcx^;
+      !!VR(smallPortrait):S^nhs%(currentFaction)_%(look).pcx^;
+      !!SN:F^PcxPngExists^/(smallPortrait);
+      !!if&v1=(FALSE);
+        !!VR(acceptLookChange):S(FALSE);
+        !!FU(nhd_PcxToPngExt):P(smallPortrait)/?(smallPortrait);
+        !!SN:T^nhd.missed.main^/?(portrMiss:z)/^resource^/(smallPortrait);
+        !!VR(portrMiss):+^ %T(nhd.missed.small)^;
+        !!VR(missed):+^{~text align=left}%(portrMiss)}^;
+      !!en;
+    !!en;
+    *!IF:M^%(override)^;
+    !!VR(lookName:z):S^nhv%(currentFaction)_%(look).pcx^;
+    !!SN:F^PcxPngExists^/(lookName);
+
+    !!if&v1=(FALSE);
+      !!VR(acceptLookChange):S(FALSE);
+      !!FU(nhd_PcxToPngExt):P(lookName)/?(lookName);
+      !!SN:T^nhd.missed.main^/?(lookMiss:z)/^resource^/(lookName);
+      !!VR(lookMiss):+^ %T(nhd.missed.look)^;
+      !!VR(missed):+^{~text align=left}%(lookMiss)}^; +^ %T(nhd.missed.small)^;     *!el;
+    !!en;
+
+    !!if&(switchPortraits)/(acceptLookChange);
+      !!if&(currentFaction:y)=i^nhd_chosen_faction_id^;
+        !!VRs^nhd_current_hero_small_portrait_name^:S(smallPortrait);
+        !!VRs^nhd_current_hero_BIG_portrait_name^:S(bigPortait);
+        !!DLi^dlg_id^:A(NHD_SMALL_PORTRAIT_ID)/(DLG_CMD_SET_PCX)/(smallPortrait)/0 E30722/1;
+      !!en;
+
+    !!el&(acceptLookChange);
+      !!VRi^nhd_chosen_faction_id^:Si^nhd_current_faction^;
+      !!VRi^nhd_chosen_heroIndex_id^:S(look);
+      !!VRs^nhd_current_hero_small_portrait_name^:S(smallPortrait);
+      !!VRs^nhd_current_hero_BIG_portrait_name^:S(bigPortait);
+      !!DLi^dlg_id^:A(NHD_MANAGER_HERO_LOOK_ID)/(DLG_CMD_SET_PCX)/(lookName)/0;
+      !!DLi^dlg_id^:A(NHD_SMALL_PORTRAIT_ID)/(DLG_CMD_SET_PCX)/(smallPortrait)/0 E30722/1;
+      !!FU(LH_DlgFrame_SetAtItem):P(NHD_PORTRAIT_FRAME_ID)/(itemId)/7;
+
+    !!el;
+      !!IF:M^%(missed)%T(nhd.missed.do_this)^;
+    !!en;
+
+
+************************************ PAGES_SWITCH_PART ***************************
+  !?FU(OnCustomDialogEvent)&i^dlg_id^=(NHD_MANAGER_DIALOG)/i^mouse_action^=(MOUSE_LMB_RELEASED);
+
+    HERO PANEL Page Switching:
+    !!if&i^mouse_item^>=20/i^mouse_item^<=21;
+      !!FU(nhd_Panel_GetNextPage):Pi^mouse_item^/i^nhd_current_HeroPortraits_page_%i(nhd_current_faction)^/i^nhd_max_page_Portraits_%i(nhd_current_faction)^/?(result:y);;24/^HeroPortraits_%i(nhd_current_faction)^/^nhl%i(nhd_current_faction)^/?(result:y);
+
+      !!if&(result)<>i^nhd_current_HeroPortraits_page_%i(nhd_current_faction)^;
+        !!FU(nhd_SetHeroesPortraitsInDlg):Pi^nhd_current_faction^/(result)/i^nhd_chosen_heroIndex_id^/1;(FALSE);
+      !!en;
+
+    BACKGROUND PANEL Page Switching:
+    !!el&i^mouse_item^>=22/i^mouse_item^<=23;
+      !!FU(nhd_Panel_GetNextPage):Pi^mouse_item^/i^nhd_current_BackGround_page^/i^nhd_max_page_BackGround^/?(result:y);
+      !!if&i^nhd_current_BackGround_page^<>(result);
+        !!FU(nhd_BackgroundPanel_SetActive):Pi^dlg_id^/(result)/i^nhd_chosen_BackGround_id^/(FALSE);
+      !!en;
+
+    BACKPACK PANEL Page Switching:
+    !!el&i^mouse_item^>=24/i^mouse_item^<=25;
+      !!FU(nhd_Panel_GetNextPage):Pi^mouse_item^/i^nhd_current_BackPack_page^/i^nhd_max_page_BackPack^/?(result:y);
+
+      !!if&i^nhd_current_BackPack_page^<>(result);
+        !!FU(nhd_SetBackPackDlg):Pi^dlg_id^/(result)/i^nhd_chosen_BackPack_id^;
+      !!en;
+
+    PORTRAIT TYPE SWITCH
+    !!el&i^mouse_item^=26;
+      !!VRi^nhd_chosen_override^:X1;   [reverse override]
+      !!FU(nhd_OverrideButton_SetState):Pi^nhd_chosen_override^;
+
+      !!FU(nhd_SetHeroesPortraitsInDlg):Pi^nhd_current_faction^/i^nhd_current_HeroPortraits_page_%i(nhd_current_faction)^/i^nhd_chosen_heroIndex_id^/1;(FALSE);
+      !!VR(itemId:y):Si^nhd_current_HeroPortraits_page_%i(nhd_current_faction)^ *24 -i^nhd_chosen_heroIndex_id^ *-1 +100;
+      !!FU(nhd_ChooseHeroPortrait):Pi^nhd_chosen_heroIndex_id^/(itemId)/(TRUE);
+    !!en;
+
+
+  !?FU(nhd_Panel_GetMaxPageId);
+  !#VA(itemsPerPage:x) (pcxItemName:x) (pageReturn:x);
+
+  !!VR(itemName:z):S^%z(pcxItemName)^;
+  !!VR(pageReturn):S0;                                             [init start page]
+
+  !!re (pageId:y)/0/99;                                            [loop all assumed pages]
+    !!VR(itemId:y):S(pageId:y) *(itemsPerPage:x);                  [init first item at page]
+    !!re j/0/(itemsPerPage)/1/-1;                         [loop each item per this page]
+      !!VR(newSlotsName:z):S^%(itemName)_%(itemId).pcx^;           [get item pcx name]
+      !!SN:F^PcxPngExists^/(newSlotsName);                         [check if exists]
+      !!if&v1;                                                     [if yes]
+        !!VR(pageReturn):S(pageId:y);   
+        !!co 2;                                                    [go to next page]
+      !!el;
+        !!VR(itemId):+1;                                           [else increase item id to search at this page]
+      !!en;
+    !!en;
+    !!br;                                                          [if we achieved this place then last checked page is empty or all 100 pages are valid wtf?]
+  !!en;
+
+  !?FU(nhd_Panel_GetNextPage);
+  !#VA(itemClicked:x) (currentPageId:x) (maxPageId:x) (newPageId:x);
+  !!VR(newPageId):S(itemClicked) &1 *2 -1 +(currentPageId); int(condition) *2 -1  + current page
+  !!if&(newPageId)>(maxPageId);
+    !!VR(newPageId):S0;
+  !!el&(newPageId)<0;
+    !!VR(newPageId):S(maxPageId);
+  !!en;
+
+
+************************************ EXIT_DLG ************************************
+  !?FU(OnCustomDialogEvent)&i^dlg_id^=(NHD_MANAGER_DIALOG)/i^mouse_action^=(MOUSE_LMB_RELEASED)/i^mouse_item^>=30721/i^mouse_item^<=30722;
+
+    !!if&i^mouse_item^=30722; if OKAY
+      !!HE-1:N?(heroId:y);
+      *!SN:Mi^nhd_originalHeroArray^/(heroId)/?(override:y);
+      !!FU(nhd_HeroLook_Redraw):P(TRUE);
+      !!FU(nhd_HeroLook_Set):P(heroId)/i^nhd_chosen_faction_id^/i^nhd_chosen_heroIndex_id^/i^nhd_chosen_BackGround_id^/i^nhd_chosen_BackPack_id^/i^nhd_chosen_override^/(TRUE);
+      !!FU(nhd_Hero_SetPortrait_Names):P(heroId)/s^nhd_current_hero_small_portrait_name^/s^nhd_current_hero_BIG_portrait_name^;      
+    !!en;
+
+    !!DL:C1; Close Dlg
+
+  !?FU(nhd_Dlg_Dtor);
+    !!VRi^lh_GetCurrentPortraitNameFoo^:S(NULL);
+    !!VRi^lh_GetNativePortraitNameFoo^:S(NULL);
+    !!VRi^lh_GetModPortraitNameFoo^:S(NULL);
+
+
+    !!VRi^lh_GetHeroLookFoo^:S(NULL);
+    !!VRi^lh_SetHeroLookFoo^:S(NULL);
+
+    !!re i/0/123;
+      !!VRi^nhd_item_%i_is_available^:S(FALSE);
+    !!en;
+
+    !!re i/0/11;
+      !!VRi^nhd_current_HeroPortraits_page_%i^:S(NULL);
+      !!VRi^nhd_max_page_Portraits_%i^:S(NULL);
+    !!en;
+    !!VRi^nhd_current_HeroPortraits_page_%(NHD_CAMPAIGN_INDEX)^:S(NULL);
+    !!VRi^nhd_max_page_Portraits_%(NHD_CAMPAIGN_INDEX)^:S(NULL);
+
+
+    !!VRi^nhd_max_page_BackGround^:S(NULL);
+    !!VRi^nhd_max_page_BackPack^:S(NULL);
+    !!VRi^nhd_campaign_page^:S(NULL);
+
+
+    !!VRi^nhd_chosen_override^:S(FALSE);
+    !!VRi^nhd_current_faction^:S(NULL);
+    !!VRi^nhd_current_page_BackPack^:S(NULL);
+    !!VRi^nhd_current_page_BackGround^:S(NULL);
+
+    !!VRi^nhd_chosen_faction_id^:S(NULL);
+    !!VRi^nhd_chosen_heroIndex_id^:S(NULL);
+    !!VRi^nhd_chosen_BackGround_id^:S(NULL);
+    !!VRi^nhd_chosen_BackPack_id^:S(NULL);
+
+
+    !!VRs^nhd_current_hero_BIG_portrait_name^:S^^;
+    !!VRs^nhd_current_hero_small_portrait_name^:S^^;
+  
+
+    !!re i/1/100;                                                                                  [restore z-global vars]
+      !!VRzi:Ss^nhd_global_z%i^;
+      !!VRs^nhd_global_z%i^:S^^;                                                                   [free temp used]
+    !!en;
+
+
+!?FU(nhd_BeforePvPCombat);
+!#VA(heroes[2]:y);
+!!UN:Cx1/(STRUCT_HOOK_CONTEXT_EBP)/4/?(ebp:y) C(ebp)/12/4/?(heroes[0]) C(ebp)/28/4/?(heroes[1]);
+!!re i/0/1;(end_value);
+  !!if&(heroes[i]);
+    !!UN:C(heroes[i])/24/4/?(id:y);
+    !!HE(id):L3/d;^^;
+    !!VRi^nhd_restore_potraits_for_%i^:S(id) +1;
+  !!en;
+!!en;
+
+!?FU(OnStartOrLoad);
+!!SN:L^EraPlugins\erm_hooker.era^/?y1;
+!!if&y1<>0;
+  !!SN:Ay1/^SetHook^/?y2 Ey2/1/4909306/(nhd_BeforePvPCombat);
+!!en;
+
+!!SN:F^GetModuleHandleA^/^NewDlgItems.era^;
+!!if&v1;
+  !!if|i^nhd_restore_potraits_for_0^/i^nhd_restore_potraits_for_1^;
+    !!re i/0/1;(end_value);
+      !!VR(heroId:y):Si^nhd_restore_potraits_for_%i^ -1;
+      !!if&(heroId)<>(NO_HERO);
+        !!FU(nhd_HeroLook_Get):P(heroId)/?(faction:y)/?(portraitIndex:y)/?(backGround:y)/?(ornament:y)/?(override:y);
+        !!if&(override)=(FALSE);
+          !!FU(nhd_Hero_SetPortrait_Names):P(heroId)/^nhs%(faction)_%(portraitIndex).pcx^/^nhl%(faction)_%(portraitIndex).pcx^;
+        !!en;
+        !!VRi^nhd_restore_potraits_for_%i^:S(NULL);
+      !!en;
+    !!en;
+  !!en;
+!!el;
+  !!re i/0/(HERO_LAST_WOG);
+    !!HEi:L3^^;
+  !!en;
+!!en;
+
+
