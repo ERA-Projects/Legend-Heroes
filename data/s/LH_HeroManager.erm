@@ -781,7 +781,7 @@ z Vars for hints:
   !!SN:Ay1/^SetHook^/?y2 Ey2/1/4909306/(nhd_BeforePvPCombat);
 !!en;
 
-!!SN:F^GetModuleHandleA^/^NewDlgItems.era^;
+!!SN:F^GetModuleHandleA^/^Legend_Heroes.era^;
 !!if&v1;
   !!if|i^nhd_restore_potraits_for_0^/i^nhd_restore_potraits_for_1^;
     !!re i/0/1;(end_value);
