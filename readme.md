@@ -1,7 +1,5 @@
 # Mod Legend Heroes
 
-**Version 1.1**
-
 - **Idea and graphics:** Sandris 
 - **Script, plugin, technical support:** daemon_n 
 - **Correction and optimization of graphics:** DrD_AVEL
