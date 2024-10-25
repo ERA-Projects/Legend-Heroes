@@ -17,12 +17,12 @@
 		}
 	},
 	"author": "Sandris, daemon_n",
-	"homepage": "",
+	"homepage": "https://github.com/ERA-Projects/Legend-Heroes",
 	"icon": {
 		"file": "LegendHeroes.ico",
 		"index": 0
 	},
-	"mod_version": "1.0.2",
+	"mod_version": "1.0.3",
 	"priority": 0,
 	"compatibility": {
 		"class": "default",
