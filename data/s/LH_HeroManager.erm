@@ -764,22 +764,22 @@ z Vars for hints:
     !!en;
 
 
-!?FU(nhd_BeforePvPCombat);
-!#VA(heroes[2]:y);
-!!UN:Cx1/(STRUCT_HOOK_CONTEXT_EBP)/4/?(ebp:y) C(ebp)/12/4/?(heroes[0]) C(ebp)/28/4/?(heroes[1]);
-!!re i/0/1;(end_value);
-  !!if&(heroes[i]);
-    !!UN:C(heroes[i])/24/4/?(id:y);
-    !!HE(id):L3/d;^^;
-    !!VRi^nhd_restore_potraits_for_%i^:S(id) +1;
-  !!en;
-!!en;
-
+*?FU(nhd_BeforePvPCombat);
+*#VA(heroes[2]:y);
+*!UN:Cx1/(STRUCT_HOOK_CONTEXT_EBP)/4/?(ebp:y) C(ebp)/12/4/?(heroes[0]) C(ebp)/28/4/?(heroes[1]);
+*!re i/0/1;(end_value);
+  *!if&(heroes[i]);
+    *!UN:C(heroes[i])/24/4/?(id:y);
+    *!HE(id):L3/d;^^;
+    *!VRi^nhd_restore_potraits_for_%i^:S(id) +1;
+  *!en;
+*!en;
 !?FU(OnStartOrLoad);
-!!SN:L^EraPlugins\erm_hooker.era^/?y1;
-!!if&y1<>0;
-  !!SN:Ay1/^SetHook^/?y2 Ey2/1/4909306/(nhd_BeforePvPCombat);
-!!en;
+// removed cause of PvP desync
+*!SN:L^EraPlugins\erm_hooker.era^/?y1;
+*!if&y1<>0;
+  *!SN:Ay1/^SetHook^/?y2 Ey2/1/4909306/(nhd_BeforePvPCombat);
+*!en;
 
 !!SN:F^GetModuleHandleA^/^Legend_Heroes.era^;
 !!if&v1;
