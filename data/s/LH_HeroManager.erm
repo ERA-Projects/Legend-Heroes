@@ -384,17 +384,6 @@ z Vars for hints:
 
       !!FU(lh_getHeroPortraitNameForDlg):P(faction)/(portraitIndex)/(heroId)/?z(zVar)/?(newSlotsName:z)/?i^nhd_item_%(itemId)_is_available^;
 
-      !!SN:E6288816/2/i^lh_dlg^/(itemId);                              [get item struct]
-      !!VR(item:y):Sv1;
-
-      !!if&(item)>0;                                                   [if exists]
-        !!UN:C(item)/48/4/?(pcx16:y);                                  [take dlgPcx's _Pcx16_*]
-        !!if&(pcx16);                                                  [if exists]
-          !!UN:C(pcx16)/24/4/?(refNumber:y);                           [take ref number]
-          !!SN&(refNumber:y)>0:E4513008/(CALLCONV_THISCALL)/(pcx16)/0; [delete pcx from memory to alow to set new;]
-        !!en;
-      !!en;
-
 
       !!DL(NHD_MANAGER_DIALOG):A(itemId)/(DLG_CMD_SET_PCX)/(newSlotsName)/1;
       !!DL(NHD_MANAGER_DIALOG):H(itemId)/z(zVar);
